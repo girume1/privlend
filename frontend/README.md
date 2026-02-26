@@ -36,5 +36,5 @@
 ├── ⚙️ tsconfig.json
 ├── ⚙️ tsconfig.node.json
 ├── 📄 vite.config.js
-└── 📄 webpack.config.js
+└── 📄 webpack.config.ts
 ```
