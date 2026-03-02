@@ -258,7 +258,6 @@ export const LoanCreationForm: React.FC<Props> = ({
           }
         } catch (error) {
           console.error('Polling error:', error);
-          // Don't clear on error, continue polling
         }
       }, 3000);
     });
@@ -314,12 +313,12 @@ export const LoanCreationForm: React.FC<Props> = ({
           `${newLoanId}u32`,
           `${currentBlock || 0}u32`,
           formData.lender,
-          tierRecord.id,
+          tierRecord as any,
           `${formData.principal}u64`,
           `${formData.collateral}u64`,
           `${formData.interest_bps}u16`,
           `${formData.duration_blocks}u32`
-        ],
+        ] as any,
         fee: 250_000, // 0.25 ALEO
         privateFee: false
       });
@@ -365,9 +364,6 @@ export const LoanCreationForm: React.FC<Props> = ({
         throw new Error('Public transaction was not confirmed');
       }
 
-      // ==============================
-      // STEP 3 — Success
-      // ==============================
       setActiveStep(2);
       toast.success('Loan created successfully!', { id: toastId });
 
@@ -387,7 +383,6 @@ export const LoanCreationForm: React.FC<Props> = ({
     }
   };
 
-  // Validation
   const isValidLender = formData.lender.startsWith('aleo1') && formData.lender.length === 63;
   const isValidPrincipal = formData.principal >= 100;
   const isValidCollateral = formData.collateral >= formData.principal * 1.5;
