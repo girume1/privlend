@@ -13,12 +13,24 @@ Zero-Knowledge Powered Confidential Lending Protocol
 ---
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Network-Aleo_Testnet-purple" />
-  <img src="https://img.shields.io/badge/Smart_Contracts-Leo-blue" />
-  <img src="https://img.shields.io/badge/Frontend-React_+_Vite-61dafb" />
-  <img src="https://img.shields.io/badge/ZK-Zero_Knowledge-green" />
-  <img src="https://img.shields.io/badge/Status-Active_Development-brightgreen" />
+  <a href="https://aleo.org">
+    <img src="https://img.shields.io/badge/Network-Aleo_Testnet-purple" />
+  </a>
+  <a href="https://docs.leo-lang.org/leo">
+    <img src="https://img.shields.io/badge/Leo Programming-Leo-blue" />
+  </a>
+  <a href="https://react.dev">
+    <img src="https://img.shields.io/badge/Frontend-React_+_Vite-61dafb" />
+  </a>
+  <a href="https://developer.aleo.org">
+     <img src="https://img.shields.io/badge/ZK-Zero_Knowledge-green" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" />
+  </a>
 </p>
+
+
 ---
 
 # 🚀 Overview
@@ -201,7 +213,7 @@ PrivLend proves:
 
 ---
 
-# 📄 License [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+# 📄 License
 
 Licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
 
