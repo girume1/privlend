@@ -6,13 +6,10 @@ export const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 
 export class AleoService {
 
-  // ===============================
-  // Latest Block (FIXED)
-  // ===============================
   async getLatestBlock(): Promise<number> {
     try {
       const response = await fetch(
-        `${API_ENDPOINT}/${NETWORK}/latest/height`
+        `${API_ENDPOINT}/latest/height?network=${NETWORK}`
       );
 
       if (!response.ok) return 0;
@@ -29,9 +26,6 @@ export class AleoService {
     }
   }
 
-  // ===============================
-  // Loan Counter
-  // ===============================
   async getLoanCounter(): Promise<number> {
     try {
       const response = await fetch(
@@ -47,9 +41,6 @@ export class AleoService {
     }
   }
 
-  // ===============================
-  // Single Public Loan
-  // ===============================
   async getLoanPublic(loanId: number): Promise<LoanPublic | null> {
     try {
       const [activeRes, ownerRes, deadlineRes] = await Promise.all([
@@ -75,53 +66,32 @@ export class AleoService {
     }
   }
 
-  // ===============================
-  // Loans by Borrower
-  // ===============================
-  async getLoansByBorrower(
-    borrower: string,
-    maxLoanId: number
-  ): Promise<LoanPublic[]> {
+  async getLoansByBorrower(borrower: string, maxLoanId: number) {
     const loans: LoanPublic[] = [];
-
     for (let i = 1; i <= maxLoanId; i++) {
       const loan = await this.getLoanPublic(i);
       if (loan && loan.owner === borrower) loans.push(loan);
     }
-
     return loans;
   }
 
-  // ===============================
-  // Expired Loans
-  // ===============================
-  async getExpiredLoans(
-    currentBlock: number,
-    maxLoanId: number
-  ): Promise<LoanPublic[]> {
+  async getExpiredLoans(currentBlock: number, maxLoanId: number) {
     const expired: LoanPublic[] = [];
-
     for (let i = 1; i <= maxLoanId; i++) {
       const loan = await this.getLoanPublic(i);
       if (loan && loan.active && loan.deadline < currentBlock) {
         expired.push(loan);
       }
     }
-
     return expired;
   }
 
-  // ===============================
-  // All Loans
-  // ===============================
-  async getAllLoans(maxLoanId: number): Promise<LoanPublic[]> {
+  async getAllLoans(maxLoanId: number) {
     const loans: LoanPublic[] = [];
-
     for (let i = 1; i <= maxLoanId; i++) {
       const loan = await this.getLoanPublic(i);
       if (loan) loans.push(loan);
     }
-
     return loans;
   }
 }
