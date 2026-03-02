@@ -19,7 +19,6 @@ Zero-Knowledge Powered Confidential Lending Protocol
   <img src="https://img.shields.io/badge/ZK-Zero_Knowledge-green" />
   <img src="https://img.shields.io/badge/Status-Active_Development-brightgreen" />
 </p>
-
 ---
 
 # 🚀 Overview
@@ -202,9 +201,9 @@ PrivLend proves:
 
 ---
 
-# 📄 License
+# 📄 License ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-MIT License
+Licensed under the MIT License — see the [LICENSE](./LICENSE) file for details.
 
 ---
 
