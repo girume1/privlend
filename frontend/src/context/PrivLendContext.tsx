@@ -1,11 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback
-} from "react";
-
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useWallet } from "@provablehq/aleo-wallet-adaptor-react";
 import { AleoService } from "../utils/aleo";
 import { LoanPublic, NetworkStats } from "../types";
@@ -13,37 +6,59 @@ import { TransactionManager, TransactionItem } from "../services/TransactionMana
 
 interface PrivLendContextType {
   service: AleoService;
+
   currentBlock: number;
   loanCounter: number;
-  userLoans: LoanPublic[];
-  expiredLoans: LoanPublic[];
-  allPublicLoans: LoanPublic[];
-  stats: NetworkStats;
-  loading: boolean;
 
+  allPublicLoans: LoanPublic[];
+  userLoans: LoanPublic[];
+
+  activePublicLoans: LoanPublic[];
+  expiredPublicLoans: LoanPublic[];
+  settledPublicLoans: LoanPublic[];
+
+  activeUserLoans: LoanPublic[];
+  expiredUserLoans: LoanPublic[];
+  settledUserLoans: LoanPublic[];
+
+  stats: NetworkStats;
   transactionHistory: TransactionItem[];
+
+  loading: boolean;
   refreshData: () => Promise<void>;
 }
 
-const PrivLendContext = createContext<PrivLendContextType | undefined>(undefined);
+const PrivLendContext =
+  createContext<PrivLendContextType | undefined>(undefined);
 
 export const usePrivLend = () => {
-  const context = useContext(PrivLendContext);
-  if (!context)
-    throw new Error("usePrivLend must be used within PrivLendProvider");
-  return context;
+  const ctx = useContext(PrivLendContext);
+  if (!ctx)
+    throw new Error(
+      "usePrivLend must be used inside PrivLendProvider"
+    );
+  return ctx;
 };
 
-export const PrivLendProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { connected, address, requestTransactionHistory } = useWallet();
+export const PrivLendProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
+  const { connected, address, requestTransactionHistory } =
+    useWallet();
+
   const [service] = useState(() => new AleoService());
 
   const [currentBlock, setCurrentBlock] = useState(0);
   const [loanCounter, setLoanCounter] = useState(0);
-  const [userLoans, setUserLoans] = useState<LoanPublic[]>([]);
-  const [expiredLoans, setExpiredLoans] = useState<LoanPublic[]>([]);
-  const [allPublicLoans, setAllPublicLoans] = useState<LoanPublic[]>([]);
-  const [transactionHistory, setTransactionHistory] = useState<TransactionItem[]>([]);
+
+  const [allPublicLoans, setAllPublicLoans] =
+    useState<LoanPublic[]>([]);
+  const [userLoans, setUserLoans] =
+    useState<LoanPublic[]>([]);
+
+  const [transactionHistory, setTransactionHistory] =
+    useState<TransactionItem[]>([]);
+
   const [loading, setLoading] = useState(true);
 
   const [stats, setStats] = useState<NetworkStats>({
@@ -53,13 +68,57 @@ export const PrivLendProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     avgInterestRate: 5.2
   });
 
+  const activePublicLoans = useMemo(
+    () =>
+      allPublicLoans.filter(
+        l => l.active && currentBlock <= l.deadline
+      ),
+    [allPublicLoans, currentBlock]
+  );
+
+  const expiredPublicLoans = useMemo(
+    () =>
+      allPublicLoans.filter(
+        l => l.active && currentBlock > l.deadline
+      ),
+    [allPublicLoans, currentBlock]
+  );
+
+  const settledPublicLoans = useMemo(
+    () => allPublicLoans.filter(l => !l.active),
+    [allPublicLoans]
+  );
+
+  const activeUserLoans = useMemo(
+    () =>
+      userLoans.filter(
+        l => l.active && currentBlock <= l.deadline
+      ),
+    [userLoans, currentBlock]
+  );
+
+  const expiredUserLoans = useMemo(
+    () =>
+      userLoans.filter(
+        l => l.active && currentBlock > l.deadline
+      ),
+    [userLoans, currentBlock]
+  );
+
+  const settledUserLoans = useMemo(
+    () => userLoans.filter(l => !l.active),
+    [userLoans]
+  );
+
   const loadTransactions = useCallback(async () => {
     if (!connected || !requestTransactionHistory) {
       setTransactionHistory([]);
       return;
     }
 
-    const manager = new TransactionManager(requestTransactionHistory);
+    const manager = new TransactionManager(
+      requestTransactionHistory
+    );
     const txs = await manager.load();
     setTransactionHistory(txs);
   }, [connected, requestTransactionHistory]);
@@ -88,17 +147,16 @@ export const PrivLendProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }));
 
       if (connected && address) {
-        const user = await service.getLoansByBorrower(address, counter);
+        const user = await service.getLoansByBorrower(
+          address,
+          counter
+        );
         setUserLoans(user);
       } else {
         setUserLoans([]);
       }
 
-      const expired = await service.getExpiredLoans(block, counter);
-      setExpiredLoans(expired);
-
       await loadTransactions();
-
     } catch (error) {
       console.error("Error refreshing data:", error);
     } finally {
@@ -118,12 +176,21 @@ export const PrivLendProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         service,
         currentBlock,
         loanCounter,
-        userLoans,
-        expiredLoans,
+
         allPublicLoans,
+        userLoans,
+
+        activePublicLoans,
+        expiredPublicLoans,
+        settledPublicLoans,
+
+        activeUserLoans,
+        expiredUserLoans,
+        settledUserLoans,
+
         stats,
-        loading,
         transactionHistory,
+        loading,
         refreshData
       }}
     >
