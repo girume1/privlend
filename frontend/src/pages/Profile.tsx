@@ -1,26 +1,9 @@
-import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  Chip,
-  Avatar,
-  Button,
-  Stack,
-  TextField,
-  IconButton
-} from "@mui/material";
-import {
-  AccountCircle,
-  OpenInNew,
-  TrendingUp,
-  Warning,
-  CheckCircle,
-  Edit,
-  Save
-} from "@mui/icons-material";
+import React, { useState, useEffect, useMemo } from "react";
+import { Box, Typography, Paper, Chip, Avatar, Button, Stack, TextField, IconButton, Divider } from "@mui/material";
+import { AccountCircle, OpenInNew, TrendingUp, Warning, CheckCircle, Edit, Save, AccountBalanceWallet } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useWallet } from "@provablehq/aleo-wallet-adaptor-react";
+import { useWalletModal } from "@provablehq/aleo-wallet-adaptor-react-ui";
 import { usePrivLend } from "../context/PrivLendContext";
 import CountUp from "react-countup";
 
@@ -33,49 +16,91 @@ interface UserProfile {
 }
 
 export const Profile: React.FC = () => {
-  const { address } = useWallet();
+  const { address, connected } = useWallet();
+  const { setVisible } = useWalletModal();
+
   const {
-    userLoans,
-    expiredLoans,
-    stats,
+    activeUserLoans,
+    expiredUserLoans,
+    settledUserLoans,
     transactionHistory
   } = usePrivLend();
 
-  const activeLoans = userLoans.filter(l => l.active);
+  const [profile, setProfile] =
+    useState<UserProfile>({
+      username: "",
+      avatar: null
+    });
 
-  const [profile, setProfile] = useState<UserProfile>({
-    username: "",
-    avatar: null
-  });
+  const [editing, setEditing] =
+    useState(false);
+  const [showAddress, setShowAddress] =
+    useState(false);
 
-  const [editing, setEditing] = useState(false);
-  const [showAddress, setShowAddress] = useState(false);
+  if (!connected || !address) {
+    return (
+      <Box textAlign="center" py={8}>
+        <Typography variant="h5" mb={2}>
+          Connect your wallet to view profile
+        </Typography>
+
+        <Button
+          variant="contained"
+          startIcon={<AccountBalanceWallet />}
+          onClick={() => setVisible(true)}
+        >
+          Connect Wallet
+        </Button>
+      </Box>
+    );
+  }
+
+  const totalLoans = useMemo(
+    () =>
+      activeUserLoans.length +
+      expiredUserLoans.length +
+      settledUserLoans.length,
+    [
+      activeUserLoans,
+      expiredUserLoans,
+      settledUserLoans
+    ]
+  );
 
   useEffect(() => {
-    if (!address) return;
+    const saved = localStorage.getItem(
+      `profile_${address}`
+    );
 
-    const saved = localStorage.getItem(`profile_${address}`);
     if (saved) {
       setProfile(JSON.parse(saved));
     } else {
       setProfile({
-        username: `User_${address.slice(0, 6)}`,
+        username: `User_${address.slice(
+          0,
+          6
+        )}`,
         avatar: null
       });
     }
   }, [address]);
 
   const handleSave = () => {
-    if (!address) return;
-    localStorage.setItem(`profile_${address}`, JSON.stringify(profile));
+    localStorage.setItem(
+      `profile_${address}`,
+      JSON.stringify(profile)
+    );
     setEditing(false);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
+    const reader =
+      new FileReader();
     reader.onload = () => {
       setProfile(prev => ({
         ...prev,
@@ -87,38 +112,52 @@ export const Profile: React.FC = () => {
 
   return (
     <Box>
-      {/* HEADER */}
-      <Typography variant="h4" fontWeight="bold" mb={4}>
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        mb={4}
+      >
         My Profile
       </Typography>
 
-      {/* PROFILE CARD */}
-      <motion.div whileHover={{ scale: 1.01 }}>
+      {/* Profile Card */}
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+      >
         <Paper
           sx={{
             p: 4,
             borderRadius: 4,
             background:
-              "linear-gradient(135deg, #1e293b, #0f172a)",
-            border: "1px solid #334155",
+              "linear-gradient(135deg,#1e293b,#0f172a)",
+            border:
+              "1px solid #334155",
             mb: 4
           }}
         >
-          <Stack direction="row" spacing={3} alignItems="center">
-            {/* AVATAR */}
+          <Stack
+            direction={{
+              xs: "column",
+              md: "row"
+            }}
+            spacing={3}
+            alignItems="center"
+          >
+            {/* Avatar */}
             <Box position="relative">
               <Avatar
-                src={profile.avatar ?? undefined}
+                src={
+                  profile.avatar ??
+                  undefined
+                }
                 sx={{
                   width: 100,
                   height: 100,
-                  bgcolor: "#6366f1",
-                  border: "3px solid #1e293b",
-                  boxShadow: "0 0 20px rgba(99,102,241,0.4)"
+                  bgcolor: "#6366f1"
                 }}
               >
                 {!profile.avatar && (
-                  <AccountCircle fontSize="large" />
+                  <AccountCircle />
                 )}
               </Avatar>
 
@@ -126,16 +165,13 @@ export const Profile: React.FC = () => {
                 <IconButton
                   component="label"
                   sx={{
-                    position: "absolute",
+                    position:
+                      "absolute",
                     bottom: 0,
                     right: 0,
-                    bgcolor: "#6366f1",
-                    color: "white",
-                    width: 36,
-                    height: 36,
-                    "&:hover": {
-                      bgcolor: "#8b5cf6"
-                    }
+                    bgcolor:
+                      "primary.main",
+                    color: "white"
                   }}
                 >
                   <Edit fontSize="small" />
@@ -143,22 +179,27 @@ export const Profile: React.FC = () => {
                     hidden
                     type="file"
                     accept="image/*"
-                    onChange={handleImageUpload}
+                    onChange={
+                      handleImageUpload
+                    }
                   />
                 </IconButton>
               )}
             </Box>
 
-            {/* USER INFO */}
+            {/* Info */}
             <Box flex={1}>
               {editing ? (
                 <TextField
                   fullWidth
-                  value={profile.username}
+                  value={
+                    profile.username
+                  }
                   onChange={e =>
                     setProfile(prev => ({
                       ...prev,
-                      username: e.target.value
+                      username:
+                        e.target.value
                     }))
                   }
                 />
@@ -168,10 +209,8 @@ export const Profile: React.FC = () => {
                 </Typography>
               )}
 
-              {/* Wallet address hide/show */}
               <Stack
                 direction="row"
-                alignItems="center"
                 spacing={1}
                 mt={1}
               >
@@ -181,37 +220,51 @@ export const Profile: React.FC = () => {
                 >
                   {showAddress
                     ? address
-                    : `${address?.slice(0, 6)}...${address?.slice(-4)}`}
+                    : `${address.slice(
+                        0,
+                        6
+                      )}...${address.slice(
+                        -4
+                      )}`}
                 </Typography>
 
                 <Button
                   size="small"
                   onClick={() =>
-                    setShowAddress(prev => !prev)
+                    setShowAddress(
+                      prev => !prev
+                    )
                   }
                 >
-                  {showAddress ? "Hide" : "Show"}
+                  {showAddress
+                    ? "Hide"
+                    : "Show"}
                 </Button>
               </Stack>
             </Box>
 
-            {/* EDIT / SAVE */}
+            {/* Actions */}
             {editing ? (
-              <IconButton onClick={handleSave}>
+              <IconButton
+                onClick={handleSave}
+              >
                 <Save />
               </IconButton>
             ) : (
               <IconButton
-                onClick={() => setEditing(true)}
+                onClick={() =>
+                  setEditing(true)
+                }
               >
                 <Edit />
               </IconButton>
             )}
 
-            {/* EXPLORER */}
             <Button
               variant="outlined"
-              startIcon={<OpenInNew />}
+              startIcon={
+                <OpenInNew />
+              }
               href={`${TESTNET_EXPLORER}${address}`}
               target="_blank"
             >
@@ -221,72 +274,94 @@ export const Profile: React.FC = () => {
         </Paper>
       </motion.div>
 
-      {/* METRICS */}
-      <Stack direction="row" spacing={3} mb={4}>
+      {/* Metrics */}
+      <Stack
+        direction={{
+          xs: "column",
+          md: "row"
+        }}
+        spacing={3}
+        mb={4}
+      >
         <MetricCard
           title="Active Loans"
-          value={activeLoans.length}
+          value={
+            activeUserLoans.length
+          }
           icon={<TrendingUp />}
           color="#10b981"
         />
 
         <MetricCard
           title="Expired"
-          value={expiredLoans.length}
+          value={
+            expiredUserLoans.length
+          }
           icon={<Warning />}
           color="#ef4444"
         />
 
         <MetricCard
           title="Total Loans"
-          value={stats.totalLoans}
+          value={totalLoans}
           icon={<CheckCircle />}
           color="#6366f1"
         />
       </Stack>
 
-      {/* RECENT ACTIVITY */}
+      {/* Activity */}
       <Paper
         sx={{
           p: 3,
           borderRadius: 4,
-          background: "#0f172a",
-          border: "1px solid #334155"
+          background:
+            "#0f172a",
+          border:
+            "1px solid #334155"
         }}
       >
-        <Typography variant="h6" mb={2}>
+        <Typography
+          variant="h6"
+          mb={2}
+        >
           Recent Activity
         </Typography>
 
-        {transactionHistory.length === 0 ? (
+        {transactionHistory.length ===
+        0 ? (
           <Typography color="text.secondary">
             No transactions yet.
           </Typography>
         ) : (
-          transactionHistory.slice(0, 5).map(tx => (
-            <Stack
-              key={tx.id}
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              py={1}
-            >
-              <Typography>
-                {tx.type}
-              </Typography>
+          transactionHistory
+            .slice(0, 5)
+            .map(tx => (
+              <Box key={tx.id}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  py={1.5}
+                >
+                  <Typography>
+                    {tx.type}
+                  </Typography>
 
-              <Chip
-                label={tx.status}
-                color={
-                  tx.status === "Completed"
-                    ? "success"
-                    : tx.status === "Failed"
-                    ? "error"
-                    : "warning"
-                }
-              />
-            </Stack>
-          ))
+                  <Chip
+                    label={tx.status}
+                    color={
+                      tx.status ===
+                      "Completed"
+                        ? "success"
+                        : tx.status ===
+                          "Failed"
+                        ? "error"
+                        : "warning"
+                    }
+                  />
+                </Stack>
+                <Divider />
+              </Box>
+            ))
         )}
       </Paper>
     </Box>
@@ -308,15 +383,25 @@ const MetricCard = ({
       border: `1px solid ${color}40`
     }}
   >
-    <Stack direction="row" justifyContent="space-between">
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+    >
       <Typography color="text.secondary">
         {title}
       </Typography>
       {icon}
     </Stack>
 
-    <Typography variant="h4" fontWeight="bold" mt={2}>
-      <CountUp end={value} duration={1.5} />
+    <Typography
+      variant="h4"
+      fontWeight="bold"
+      mt={2}
+    >
+      <CountUp
+        end={value}
+        duration={1.5}
+      />
     </Typography>
   </Paper>
 );
