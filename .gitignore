@@ -1,0 +1,54 @@
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+dist/
+build/
+.next/
+.pnpm-store/
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+
+# Vite
+vite.config.ts.timestamp-*
+
+# =========================
+# Leo / Aleo
+# =========================
+target/
+*.aleo
+*.proof
+*.wasm
+
+# =========================
+# Environment Files
+# =========================
+.env
+.env.local
+.env.*.local
+
+# =========================
+# IDE
+# =========================
+.idea/
+.vscode/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Deployment
+# =========================
+.netlify/
+.vercel/
+
+# =========================
+# Misc
+# =========================
+tmp/
+*.zip
+storage*/
