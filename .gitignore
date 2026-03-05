@@ -7,17 +7,11 @@ build/
 .next/
 .pnpm-store/
 .pnpm-debug.log*
-package-lock.json
-yarn.lock
-
-# Vite
-vite.config.ts.timestamp-*
 
 # =========================
 # Leo / Aleo
 # =========================
 target/
-*.aleo
 *.proof
 *.wasm
 
